@@ -218,6 +218,14 @@ class PlayerController:
     def repeat_pressed(self, _event=None):
         cs = self.model.current_segment.get()
         tt = self.model.segment_times.get()[cs]
+        #
+        # If the current time is really close to the target time tt, then the user probably perhaps
+        # wanted the previous segment
+        #
+        proximity = self.model.current_position.get() - tt
+        if 0.0 < proximity and proximity < 1.0:
+            tt = self.model.segment_times.get()[max(cs - 1, 0)]
+
         self.player.seek(tt)
 
     #
