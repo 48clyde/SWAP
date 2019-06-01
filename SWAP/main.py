@@ -2,8 +2,9 @@
 #
 #
 import os
+import sys
 from tkinter import filedialog
-from tkinter import *
+import tkinter as tk
 
 from SWAP.playerview import PlayerView
 from SWAP.mp3model import MediaModel
@@ -27,6 +28,7 @@ class PlayerController:
         self.model.track_length.add_callback(self.view.set_track_length)
         self.model.current_position.add_callback(self.view.set_current_position)
         self.model.current_position.add_callback(self.player_state_prev_button)
+        self.model.current_position.add_callback(self.player_state_repeat_button)
         self.model.current_position.add_callback(self.player_state_next_button)
 
         self.model.current_segment.add_callback(self.view.set_current_segment)
@@ -40,6 +42,7 @@ class PlayerController:
         # Bind the controls to commands to process when users click on them
         #
         self.view.prev_interval_button.config(command=self.prev_pressed)
+        self.view.repeat_button.config(command=self.repeat_pressed)
         self.view.play_pause_button.config(command=self.play_pause_pressed)
         self.view.next_button.config(command=self.next_pressed)
         self.view.current_position_slider.config(command=self.user_moving_current_position)
@@ -70,6 +73,7 @@ class PlayerController:
         # Connect the observers for the buttons
         #
         self.model.player_state.add_callback(self.player_state_prev_button)
+        self.model.player_state.add_callback(self.player_state_repeat_button)
         self.model.player_state.add_callback(self.player_state_play_pause_button)
         self.model.player_state.add_callback(self.player_state_next_button)
         self.model.muted.add_callback(self.player_state_muted_button)
@@ -78,6 +82,8 @@ class PlayerController:
         # Bind some shortcut keys
         #
         self.view.master.bind("<Left>", self.prev_pressed)
+        self.view.master.bind("r", self.repeat_pressed)
+        self.view.master.bind("R", self.repeat_pressed)
         self.view.master.bind("<space>", self.play_pause_pressed)
         self.view.master.bind("<Right>", self.next_pressed)
 
@@ -110,53 +116,70 @@ class PlayerController:
     #
     # Callbacks re: the player state that impact on the buttons
     #
-    def player_state_prev_button(self, x):
+    def player_state_prev_button(self, _x):
         state = self.model.player_state.get()
         if state in [PlayerState.INITALISED, PlayerState.UNINITALISED]:
-            self.view.prev_interval_button.config(state=DISABLED, image=self.view.prev_image_disabled)
+            self.view.prev_interval_button.config(state=tk.DISABLED, image=self.view.prev_image_disabled)
 
         elif state in [PlayerState.LOADED, PlayerState.READY, PlayerState.PAUSED, PlayerState.FINISHED]:
             if self.model.current_position.get() > 0:
-                self.view.prev_interval_button.config(state=NORMAL, image=self.view.prev_image_normal)
+                self.view.prev_interval_button.config(state=tk.NORMAL, image=self.view.prev_image_normal)
             else:
-                self.view.prev_interval_button.config(state=DISABLED, image=self.view.prev_image_disabled)
+                self.view.prev_interval_button.config(state=tk.DISABLED, image=self.view.prev_image_disabled)
 
         elif state in [PlayerState.PLAYING]:
-            self.view.prev_interval_button.config(state=NORMAL, image=self.view.prev_image_normal)
+            self.view.prev_interval_button.config(state=tk.NORMAL, image=self.view.prev_image_normal)
 
     #
     #
     #
-    def player_state_play_pause_button(self,  x):
+    def player_state_repeat_button(self, _x):
         state = self.model.player_state.get()
         if state in [PlayerState.INITALISED, PlayerState.UNINITALISED]:
-            self.view.play_pause_button.config(state=DISABLED, image=self.view.play_image_disabled)
+            self.view.repeat_button.config(state=tk.DISABLED, image=self.view.repeat_image_disabled)
+
+        elif state in [PlayerState.LOADED, PlayerState.READY, PlayerState.PAUSED, PlayerState.FINISHED]:
+            if self.model.current_position.get() > 0.0:
+                self.view.repeat_button.config(state=tk.NORMAL, image=self.view.repeat_image_normal)
+            else:
+                self.view.repeat_button.config(state=tk.DISABLED, image=self.view.repeat_image_disabled)
+
+        elif state in [PlayerState.PLAYING]:
+            self.view.repeat_button.config(state=tk.NORMAL, image=self.view.repeat_image_normal)
+
+    #
+    #
+    #
+    def player_state_play_pause_button(self,  _x):
+        state = self.model.player_state.get()
+        if state in [PlayerState.INITALISED, PlayerState.UNINITALISED]:
+            self.view.play_pause_button.config(state=tk.DISABLED, image=self.view.play_image_disabled)
 
         elif state in [PlayerState.LOADED, PlayerState.READY]:
-            self.view.play_pause_button.config(state=NORMAL, image=self.view.play_image_normal)
+            self.view.play_pause_button.config(state=tk.NORMAL, image=self.view.play_image_normal)
 
         elif state in [PlayerState.PLAYING]:
-            self.view.play_pause_button.config(state=NORMAL, image=self.view.pause_image_normal)
+            self.view.play_pause_button.config(state=tk.NORMAL, image=self.view.pause_image_normal)
 
         elif state in [PlayerState.PAUSED, PlayerState.FINISHED]:
-            self.view.play_pause_button.config(state=NORMAL, image=self.view.play_image_normal)
+            self.view.play_pause_button.config(state=tk.NORMAL, image=self.view.play_image_normal)
 
     #
     #
     #
-    def player_state_next_button(self,  x):
+    def player_state_next_button(self,  _x):
         state = self.model.player_state.get()
         if state in [PlayerState.INITALISED, PlayerState.UNINITALISED]:
-            self.view.next_button.config(state=DISABLED, image=self.view.next_image_disabled)
+            self.view.next_button.config(state=tk.DISABLED, image=self.view.next_image_disabled)
 
         elif state in [PlayerState.LOADED, PlayerState.READY, PlayerState.PAUSED, PlayerState.FINISHED]:
             if self.model.current_position.get() < self.model.track_length.get():
-                self.view.next_button.config(state=NORMAL, image=self.view.next_image_normal)
+                self.view.next_button.config(state=tk.NORMAL, image=self.view.next_image_normal)
             else:
-                self.view.next_button.config(state=DISABLED, image=self.view.next_image_disabled)
+                self.view.next_button.config(state=tk.DISABLED, image=self.view.next_image_disabled)
 
         elif state in [PlayerState.PLAYING]:
-            self.view.next_button.config(state=NORMAL, image=self.view.next_image_normal)
+            self.view.next_button.config(state=tk.NORMAL, image=self.view.next_image_normal)
 
     #
     #
@@ -186,7 +209,15 @@ class PlayerController:
     #
     #
     #
-    def play_pause_pressed(self, event=None):
+    def repeat_pressed(self, _event=None):
+        cs = self.model.current_segment.get()
+        tt = self.model.segment_times.get()[cs]
+        self.player.seek(tt)
+
+    #
+    #
+    #
+    def play_pause_pressed(self, _event=None):
         if self.model.player_state.get() == PlayerState.PLAYING:
             self.player.pause()
         else:
@@ -211,7 +242,7 @@ class PlayerController:
     # then create an event with this new position that will be picked up in process_player_events so that
     # the model can be updated
     #
-    def user_moving_current_position(self, p=None):
+    def user_moving_current_position(self, _p=None):
         pos = self.view.current_position_slider.get()
         self.player.seek(pos)
 
@@ -284,7 +315,7 @@ class PlayerController:
 #
 #
 if __name__ == "__main__":
-    root = Tk()
+    root = tk.Tk()
     root.geometry("400x300")
     app = PlayerController(root)
 
