@@ -165,6 +165,12 @@ class PlayerView(tk.Frame):
         self.prev_interval_button = tk.Button(control_group_frame, image=self.prev_image_disabled, borderwidth=0)
         self.prev_interval_button.pack(side=tk.LEFT)
 
+
+        self.repeat_image_normal = tk.PhotoImage(file='images/repeat_NORMAL.png')
+        self.repeat_image_disabled = tk.PhotoImage(file='images/repeat_DISABLED.png')
+        self.repeat_button = tk.Button(control_group_frame, image=self.repeat_image_normal)
+        self.repeat_button.pack(side=tk.LEFT)
+
         self.play_image_normal = tk.PhotoImage(file='images/play_NORMAL.png')
         self.play_image_disabled = tk.PhotoImage(file='images/play_DISABLED.png')
 
