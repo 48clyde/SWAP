@@ -11,8 +11,8 @@ class PlayerView(tk.Frame):
     #
     #
     #
-    def __init__(self, root=None):
-        tk.Frame.__init__(self, root)
+    def __init__(self, main=None):
+        tk.Frame.__init__(self, main)
         self.master.minsize(400, 300)
         self.master.title("Spoken Word Audio Player")
 
@@ -35,8 +35,6 @@ class PlayerView(tk.Frame):
         #
         # The menus
         #
-
-
         self.main_menu = tk.Menu(root)
         root.config(menu=self.main_menu)
 
@@ -112,7 +110,7 @@ class PlayerView(tk.Frame):
         #
         info_frame = tk.Frame(left_frame)
         info_frame.pack(side=tk.TOP, anchor=tk.CENTER, fill=tk.X)
-        self._album_label = tk.Label(info_frame, textvariable=self._album, pady=10)
+        self._album_label = tk.Label(info_frame, textvariable=self._album, pady=15, font="-size 16")
         self._album_label.pack(side=tk.TOP, fill=tk.X)
         self._title_label = tk.Label(info_frame, textvariable=self._title, pady=10)
         self._title_label.pack(side=tk.TOP, fill=tk.X)
@@ -150,7 +148,6 @@ class PlayerView(tk.Frame):
                 showvalue=tk.FALSE)
         self.volume_slider.pack(side=tk.LEFT, fill=tk.X, expand=1)
 
-
         spacer = tk.Label(left_frame)
         spacer.pack(side=tk.BOTTOM)
 
@@ -162,9 +159,8 @@ class PlayerView(tk.Frame):
 
         self.prev_image_normal = tk.PhotoImage(file='images/prev_NORMAL.png')
         self.prev_image_disabled = tk.PhotoImage(file='images/prev_DISABLED.png')
-        self.prev_interval_button = tk.Button(control_group_frame, image=self.prev_image_disabled, borderwidth=0)
+        self.prev_interval_button = tk.Button(control_group_frame, image=self.prev_image_disabled)
         self.prev_interval_button.pack(side=tk.LEFT)
-
 
         self.repeat_image_normal = tk.PhotoImage(file='images/repeat_NORMAL.png')
         self.repeat_image_disabled = tk.PhotoImage(file='images/repeat_DISABLED.png')
@@ -254,11 +250,10 @@ class PlayerView(tk.Frame):
             return
 
         cs = self.segment_list.curselection()
-        if (len(cs) == 0) or (len(cs) > 0 and cs[0] != segment_ix) :
+        if (len(cs) == 0) or (len(cs) > 0 and cs[0] != segment_ix):
             self.segment_list.selection_clear(0, tk.END)
             self.segment_list.selection_set(segment_ix)
             self.segment_list.see(segment_ix)
-            s = self.segment_list.get(segment_ix)
 
     #
     #
@@ -282,6 +277,7 @@ class PlayerView(tk.Frame):
     # update the recents menu with the first X most recent files if there are any available.
     #
     MAX_DISPLAY_RECENTS = 9
+
     def set_menu_recents(self, recents):
         #
         # Remove old recents, i.e. those items from 0 until 1 before the separator
@@ -335,14 +331,14 @@ class PlayerView(tk.Frame):
         else:
             return "{:02d}:{:02d}".format(m, seconds)
 
-if __name__  ==  "__main__":
+
+if __name__ ==  "__main__":
     root = tk.Tk()
     root.geometry("400x300")
     app = PlayerView(root)
     app.set_album("French for the Traveller")
     app.set_title("Outdoor Activities")
     app.set_track_length(543)
-    app.set_current_position(123)
     app.prev_interval_button.config(state=tk.NORMAL, image=app.prev_image_normal)
     app.set_volume(0.9)
     app.set_menu_recents(
@@ -351,5 +347,12 @@ if __name__  ==  "__main__":
             "media/fables_01_00_aesop_64kb.mp3",
             "media/fables_01_01_aesop_64kb.mp3"
         ])
-    app._segments.set(["00:00", "00:05", "00:23", "00:42", "00:51", "00:59", "01:10", "01:16", "01:22", "01:43", "01:55", "02:03", "02:18", "02:21", "02:31", "02:37", "02:55", "03:11"])
+
+    s = [
+        0, 5, 13, 26, 29, 36, 50, 57, 67, 75, 78, 83, 87, 92,
+        95, 108, 116, 129, 143, 158, 166, 172, 184, 187, 197,
+        212, 224, 235, 240, 251, 256, 269, 275, 277, 292]
+    app.set_segments(s)
+    app.set_current_segment(4)
+    app.set_current_position(s[4])
     root.mainloop()
