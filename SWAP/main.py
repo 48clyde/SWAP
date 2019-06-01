@@ -81,13 +81,13 @@ class PlayerController:
         #
         # Bind some shortcut keys
         #
-        self.view.master.bind("<Left>", lambda i=-1 : self.prev_pressed(i))
-        self.view.master.bind("<Command-Left>", lambda i=-10 : self.prev_pressed(i))
+        self.view.master.bind("<Left>", lambda i=-1: self.prev_pressed(i))
+        self.view.master.bind("<Command-Left>", lambda i=-10: self.prev_pressed(i))
         self.view.master.bind("r", self.repeat_pressed)
         self.view.master.bind("R", self.repeat_pressed)
         self.view.master.bind("<space>", self.play_pause_pressed)
-        self.view.master.bind("<Right>", lambda i=1 : self.next_pressed(i))
-        self.view.master.bind("<Command-Right>", lambda i=10 :  self.next_pressed(i))
+        self.view.master.bind("<Right>", lambda i=1: self.next_pressed(i))
+        self.view.master.bind("<Command-Right>", lambda i=10: self.next_pressed(i))
 
         self.root.after(200, self.process_player_events)
 
@@ -98,18 +98,23 @@ class PlayerController:
     def process_player_events(self):
         while not self.player.event_queue.empty():
             ev, param = self.player.event_queue.get(block=False)
-            self.model.player_state.set(ev)
+
             #
             # filter by event type...
             #
             if ev in [PlayerState.INITALISED]:
                 self.model.track_length.set(0.0)
                 self.model.set_current_pos(0.0)
+                self.model.player_state.set(ev)
 
             elif ev in [PlayerState.LOADED]:
                 self.model.track_length.set(param)
+                self.model.player_state.set(ev)
 
-            elif ev in [PlayerState.READY, PlayerState.PLAYING, PlayerState.PAUSED]:
+            elif ev in [PlayerState.READY]:
+                self.model.player_state.set(ev)
+
+            elif ev in [PlayerState.PLAYING, PlayerState.PAUSED]:
                 self.model.set_current_pos(param)
 
         self.root.after(200, self.process_player_events)
@@ -220,8 +225,10 @@ class PlayerController:
     #
     def play_pause_pressed(self, _event=None):
         if self.model.player_state.get() == PlayerState.PLAYING:
+            self.model.player_state.set(PlayerState.PAUSED)
             self.player.pause()
         else:
+            self.model.player_state.set(PlayerState.PLAYING)
             self.player.play()
 
     #
