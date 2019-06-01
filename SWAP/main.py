@@ -81,11 +81,13 @@ class PlayerController:
         #
         # Bind some shortcut keys
         #
-        self.view.master.bind("<Left>", self.prev_pressed)
+        self.view.master.bind("<Left>", lambda i=-1 : self.prev_pressed(i))
+        self.view.master.bind("<Command-Left>", lambda i=-10 : self.prev_pressed(i))
         self.view.master.bind("r", self.repeat_pressed)
         self.view.master.bind("R", self.repeat_pressed)
         self.view.master.bind("<space>", self.play_pause_pressed)
-        self.view.master.bind("<Right>", self.next_pressed)
+        self.view.master.bind("<Right>", lambda i=1 : self.next_pressed(i))
+        self.view.master.bind("<Command-Right>", lambda i=10 :  self.next_pressed(i))
 
         self.root.after(200, self.process_player_events)
 
@@ -196,8 +198,7 @@ class PlayerController:
     #
     # View control interaction handlers
     #
-    def prev_pressed(self, event=None):
-        step = -1
+    def prev_pressed(self, event=None, step=-1):
         if event is not None and event.state & 12 > 0:
             step = -10
         cs = self.model.current_segment.get()
@@ -226,8 +227,7 @@ class PlayerController:
     #
     #
     #
-    def next_pressed(self, event=None):
-        step = 1
+    def next_pressed(self, event=None, step=1):
         if event is not None and event.state & 12 > 0:
             step = 10
         cs = self.model.current_segment.get()
@@ -256,7 +256,7 @@ class PlayerController:
     # The user has changed the volume
     #
     def volume_changed(self, vol):
-        self.model.volume.set(float(vol))
+        self.player.set_volume(float(vol))
 
     #
     # The user has selected a specific time interval in the list
