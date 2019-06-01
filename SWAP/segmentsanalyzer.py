@@ -138,21 +138,3 @@ class SegmentsAnalyzer:
 
         if self.completed_callback is not None:
             self.completed_callback(self.segments)
-
-
-if __name__ == "__main__":
-    def segments_callback(s):
-        print("Found {} segments".format(len(s)))
-
-    def progress(p):
-        print("Processing {}".format(p))
-
-    sa = SegmentsAnalyzer()
-    sa.completed_callback = segments_callback
-    sa.progress_callback = progress
-    sa.process("media/fishermanandhisoul_01_wilde_128kb.mp3")
-    import time
-    time.sleep(3)
-    sa.process("media/fables_01_01_aesop_64kb.mp3")
-
-    time.sleep(8)

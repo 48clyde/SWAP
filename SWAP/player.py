@@ -342,31 +342,3 @@ class Player:
 
     def set_volume(self, volume):
         self.mp3.set_volume(volume)
-
-
-if __name__ == "__main__":
-    import time
-
-    media_file_name = "media/fishermanandhisoul_01_wilde_128kb.mp3"
-
-    p = Player()
-
-    def event_monitor():
-        print("Starting to monitor player events")
-        while True:
-            ev, param = p.event_queue.get(block=True)
-            #print("{}({})".format(ev, param))
-    threading.Thread(target=event_monitor, daemon=True, name="EM").start()
-
-    p.open(media_file_name)
-    print(p.get_volume())
-
-    p.seek(930)
-    p.play()
-
-    for v in [0.0, 0.05, 0.1, 0.15, 0.2, 0.3, 0.5, 0.7,  0.9, 1.0]:
-        p.set_volume(v)
-        print("Setting volume to {}, got {}".format(v, p.get_volume()))
-        time.sleep(3)
-    time.sleep(10)
-    p.pause()
