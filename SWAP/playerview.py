@@ -11,8 +11,8 @@ class PlayerView(tk.Frame):
     #
     #
     #
-    def __init__(self, main=None):
-        tk.Frame.__init__(self, main)
+    def __init__(self, root=None):
+        tk.Frame.__init__(self, root)
         self.master.minsize(400, 300)
         self.master.title("Spoken Word Audio Player")
 
@@ -266,11 +266,6 @@ class PlayerView(tk.Frame):
         for i in s:
             segments.append(PlayerView._display_time(i))
         self._segments.set(segments)
-        #
-        # set the track slider resolution based on the number of segments
-        #
-        r = self.current_position_slider.cget('to') / len(s)
-        self.current_position_slider.config(resolution=r)
 
     ################################################################################################################
     #

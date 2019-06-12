@@ -113,6 +113,7 @@ class PlayerController:
 
             elif ev in [PlayerState.READY]:
                 self.model.player_state.set(ev)
+                self.model.set_current_pos(param)
 
             elif ev in [PlayerState.PLAYING, PlayerState.PAUSED]:
                 self.model.set_current_pos(param)
@@ -129,7 +130,7 @@ class PlayerController:
             self.view.prev_interval_button.config(state=tk.DISABLED, image=self.view.prev_image_disabled)
 
         elif state in [PlayerState.LOADED, PlayerState.READY, PlayerState.PAUSED, PlayerState.FINISHED]:
-            if self.model.current_position.get() > 0:
+            if self.model.current_position.get() > 0 and len(self.model.segment_times.get()) > 0:
                 self.view.prev_interval_button.config(state=tk.NORMAL, image=self.view.prev_image_normal)
             else:
                 self.view.prev_interval_button.config(state=tk.DISABLED, image=self.view.prev_image_disabled)
@@ -146,7 +147,7 @@ class PlayerController:
             self.view.repeat_button.config(state=tk.DISABLED, image=self.view.repeat_image_disabled)
 
         elif state in [PlayerState.LOADED, PlayerState.READY, PlayerState.PAUSED, PlayerState.FINISHED]:
-            if self.model.current_position.get() > 0.0:
+            if self.model.current_position.get() > 0.0  and len(self.model.segment_times.get()) > 0:
                 self.view.repeat_button.config(state=tk.NORMAL, image=self.view.repeat_image_normal)
             else:
                 self.view.repeat_button.config(state=tk.DISABLED, image=self.view.repeat_image_disabled)
@@ -180,7 +181,7 @@ class PlayerController:
             self.view.next_button.config(state=tk.DISABLED, image=self.view.next_image_disabled)
 
         elif state in [PlayerState.LOADED, PlayerState.READY, PlayerState.PAUSED, PlayerState.FINISHED]:
-            if self.model.current_position.get() < self.model.track_length.get():
+            if self.model.current_position.get() < self.model.track_length.get() and len(self.model.segment_times.get()) > 0:
                 self.view.next_button.config(state=tk.NORMAL, image=self.view.next_image_normal)
             else:
                 self.view.next_button.config(state=tk.DISABLED, image=self.view.next_image_disabled)
@@ -335,7 +336,7 @@ if __name__ == "__main__":
     app = PlayerController(root)
 
     #
-    # if there is a file specified on the CL, load it up, otherwise load up the most recent if possible?
+    # if there is a file specified on the CL, load it up, otherwise load up the most recent
     #
     if len(sys.argv) > 1:
         f = sys.argv[1]
@@ -347,5 +348,4 @@ if __name__ == "__main__":
     else:
         app.menu_open_file()
 
-    # if there is a file specified on the CL, try and open it and start playing?
     root.mainloop()

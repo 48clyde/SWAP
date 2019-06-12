@@ -18,9 +18,9 @@ from pydub import AudioSegment
 
 class SegmentsAnalyzer:
     def __init__(self):
-        self.window_duration = 1.0
+        self.window_duration = 0.5
         self.silence_threshold = 1e-6
-        self.step_duration = 0.5
+        self.step_duration = 0.2
 
         self.progress_callback = None
         self.completed_callback = None
