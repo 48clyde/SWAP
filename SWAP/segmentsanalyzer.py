@@ -18,7 +18,7 @@ from pydub import AudioSegment
 
 class SegmentsAnalyzer:
     def __init__(self):
-        self.window_duration = 0.5
+        self.window_duration = 0.6
         self.silence_threshold = 1e-6
         self.step_duration = 0.2
 
@@ -129,12 +129,29 @@ class SegmentsAnalyzer:
                     self.progress_callback(pct_complete)
 
         window_silence = (e > self.silence_threshold for e in window_energy)
-        cut_times = (r * self.step_duration for r in SegmentsAnalyzer._rising_edges(window_silence))
-        self.segments = [t for t in cut_times]
+        frames = []
+        for r in SegmentsAnalyzer._rising_edges(window_silence):
+            frames.append(r * self.step_duration)
+
+        # Add frame for the end of the file
+        frames.append(len(window_energy) * self.step_duration)
 
         if self.progress_callback is not None:
             self.progress_callback(0.0)
         os.remove(tmp_wave_file)
 
         if self.completed_callback is not None:
-            self.completed_callback(self.segments)
+            self.completed_callback(frames)
+
+
+if __name__ ==  "__main__":
+    import time
+
+    def callback(f):
+        print("Found {} frames".format(len(f)))
+
+    sa = SegmentsAnalyzer()
+    sa.completed_callback = callback
+    sa.process("sample.mp3")
+    time.sleep(100)
+

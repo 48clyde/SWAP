@@ -169,11 +169,15 @@ class PlayerView(tk.Frame):
 
         self.play_image_normal = tk.PhotoImage(file='images/play_NORMAL.png')
         self.play_image_disabled = tk.PhotoImage(file='images/play_DISABLED.png')
-
         self.pause_image_normal = tk.PhotoImage(file='images/pause_NORMAL.png')
         self.pause_image_disabled = tk.PhotoImage(file='images/pause_DISABLED.png')
         self.play_pause_button = tk.Button(control_group_frame, image=self.play_image_normal)
         self.play_pause_button.pack(side=tk.LEFT)
+
+        self.step_image_normal = tk.PhotoImage(file='images/step_NORMAL.png')
+        self.step_image_disabled = tk.PhotoImage(file='images/step_DISABLED.png')
+        self.step_button = tk.Button(control_group_frame, image=self.step_image_normal)
+        self.step_button.pack(side=tk.LEFT)
 
         self.next_image_normal = tk.PhotoImage(file='images/next_NORMAL.png')
         self.next_image_disabled = tk.PhotoImage(file='images/next_DISABLED.png')
@@ -213,7 +217,7 @@ class PlayerView(tk.Frame):
         self._title.set(title)
 
     #
-    #
+    # set the track length in seconds
     #
     def set_track_length(self, track_length):
         self._track_length = track_length
@@ -228,7 +232,7 @@ class PlayerView(tk.Frame):
         self._load_progress.set(load_progress)
 
     #
-    #
+    # set the current position indicator in seconds
     #
     def set_current_position(self, position):
         self._current_position.set(position)
@@ -237,13 +241,13 @@ class PlayerView(tk.Frame):
         self._remaining_time.set(PlayerView._display_time(self._track_length - position))
 
     #
-    #
+    # set the volume as a float 0.0 - 1.0
     #
     def set_volume(self, volume):
         self._volume.set(volume)
 
     #
-    #
+    # Select the specified segment
     #
     def set_current_segment(self, segment_ix):
         if segment_ix is None:

@@ -16,10 +16,11 @@ class MediaModel:
         # Items relating to the file
         #
         self.file_name = Observable("")
-        self.track_length = Observable(0.0)
         self.album = Observable("")
         self.title = Observable("")
-        self.segment_times = Observable([])
+        self.segments = Observable([])
+        self.track_length = Observable(0.0)
+
         self.load_progress = Observable(0)
 
         #
@@ -41,7 +42,7 @@ class MediaModel:
         #
         self.segment_analyzer = SegmentsAnalyzer()
         self.segment_analyzer.progress_callback = self.load_progress.set
-        self.segment_analyzer.completed_callback = self.segment_times.set
+        self.segment_analyzer.completed_callback = self.segments.set
 
         #
         #
@@ -72,26 +73,37 @@ class MediaModel:
         #
         self.track_length.set(0.0)
         self.current_position.set(0.0)
-        self.segment_times.set([])
+        self.segments.set([])
         #
         # get the meta data
         #
         audiofile = eyed3.load(filename)
-        self.album.set(audiofile.tag.album or "Unknown")
-        self.title.set(audiofile.tag.title or "Unknown")
-        self.track_length.set(audiofile.info.time_secs)
+
+
+        if audiofile.tag is None:
+            self.album.set("Unknown")
+            self.title.set("Unknown")
+        else:
+            self.album.set(audiofile.tag.album or "Unknown")
+            self.title.set(audiofile.tag.title or "Unknown")
+
         #
         # Get the segments
         #
         self.segment_analyzer.process(filename)
 
 
-    def set_current_pos(self, pos):
-        self.current_position.set(pos)
-        for ix, s in enumerate(self.segment_times.get()):
-            if s > self.current_position.get():
-                self.current_segment.set(max(ix - 1, 0))
-                break
+    def set_current_position(self, cp):
+        self.current_position.set(cp)
+        if len(self.segments.get()) == 0:
+            return
+        if cp > self.segments.get()[-1:][0]:
+            ix = len(self.segments.get()) - 1
+        elif cp < self.segments.get()[0]:
+            ix = 0
+        else:
+            ix = next(x for x, val in enumerate(self.segments.get()) if val > cp) - 1
+        self.current_segment.set(ix)
 
     def set_current_segment(self, seg):
         if seg is None:
@@ -100,5 +112,5 @@ class MediaModel:
             return
 
         self.current_segment.set(seg)
-        pos = self.segment_times.get()[seg]
+        pos = self.segments.get()[seg]
         self.current_position.set(pos)
