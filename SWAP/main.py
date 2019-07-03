@@ -359,7 +359,8 @@ class PlayerController:
 
     def menu_recent_selected(self, recent_ix):
         selected_recent = self.model.recent_files.get()[recent_ix]
-        self.model.file_name.set(selected_recent)
+        if selected_recent and selected_recent is not "" and os.path.exists(selected_recent) and os.access(selected_recent, os.R_OK):
+           self.model.file_name.set(selected_recent)
 
 
 ####################################################################################################################
@@ -380,7 +381,10 @@ if __name__ == "__main__":
             app.model.file_name.set(f)
     elif len(app.model.recent_files.get()) > 0:
         f = app.model.recent_files.get()[0]
-        app.model.file_name.set(f)
+        if f and f is not "" and os.path.exists(f) and os.access(f, os.R_OK):
+            app.model.file_name.set(f)
+        else:
+            app.menu_open_file()
     else:
         app.menu_open_file()
 
