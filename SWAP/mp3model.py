@@ -3,7 +3,7 @@
 
 """
 import eyed3
-
+import os
 from SWAP.segmentsanalyzer import SegmentsAnalyzer
 from SWAP.observable import Observable
 from SWAP.player import PlayerState
@@ -42,7 +42,7 @@ class MediaModel:
         #
         self.segment_analyzer = SegmentsAnalyzer()
         self.segment_analyzer.progress_callback = self.load_progress.set
-        self.segment_analyzer.completed_callback = self.segments.set
+        self.segment_analyzer.completed_callback = self._set_segments
 
         #
         #
@@ -77,8 +77,12 @@ class MediaModel:
         #
         # get the meta data
         #
-        audiofile = eyed3.load(filename)
+        if not filename or filename is "" or not os.path.exists(filename) or not os.access(filename, os.R_OK):
+            self.album.set("Unknown")
+            self.title.set("Unknown")
+            return
 
+        audiofile = eyed3.load(filename)
 
         if audiofile.tag is None:
             self.album.set("Unknown")
@@ -95,22 +99,35 @@ class MediaModel:
 
     def set_current_position(self, cp):
         self.current_position.set(cp)
+        #
+        # Work out what the current segment is, if segments are loaded
+        #
         if len(self.segments.get()) == 0:
             return
+
         if cp > self.segments.get()[-1:][0]:
+            # cp is beyond the last segment
             ix = len(self.segments.get()) - 1
-        elif cp < self.segments.get()[0]:
+        elif cp <= self.segments.get()[0]:
+            # must be the first segment
             ix = 0
         else:
-            ix = next(x for x, val in enumerate(self.segments.get()) if val > cp) - 1
+            for ix in range(len(self.segments.get()) - 1, 0, -1):
+                s = self.segments.get()[ix]
+                if s <= cp:
+                    break
         self.current_segment.set(ix)
 
-    def set_current_segment(self, seg):
-        if seg is None:
-            self.current_segment.set(0)
-            self.current_position.set(0.0)
-            return
 
-        self.current_segment.set(seg)
-        pos = self.segments.get()[seg]
-        self.current_position.set(pos)
+    def set_current_position_by_segment(self, seg):
+        if seg is None:
+            self.set_current_position(0.0)
+        elif 0 <= seg < len(self.segments.get()):
+            self.set_current_position(self.segments.get()[seg])
+        else:
+            self.segments.get()[-1]
+
+
+    def _set_segments(self, segments):
+        self.segments.set(segments)
+        self.set_current_position(self.current_position.get())

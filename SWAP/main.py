@@ -87,6 +87,7 @@ class PlayerController:
 
         self.root.after(200, self.process_player_events)
 
+
     ####################################################################################################################
     #
     # Check the player for events that need to be reflected in the model
@@ -149,8 +150,9 @@ class PlayerController:
         self.player_state_button(None)
 
     def player_state_button(self, _x):
+        print("Player State {}".format(self.model.player_state.get()))
 
-        if self.model.player_state.get() in [PlayerState.INITALISED, PlayerState.UNINITALISED]:
+        if self.model.player_state.get() in [PlayerState.UNINITALISED, PlayerState.INITALISED]:
             self.view.prev_interval_button.config(state=tk.DISABLED, image=self.view.prev_image_disabled)
             self.view.repeat_button.config(state=tk.DISABLED, image=self.view.repeat_image_disabled)
             self.view.play_pause_button.config(state=tk.DISABLED, image=self.view.play_image_disabled)
@@ -210,6 +212,7 @@ class PlayerController:
             self.view.play_pause_button.config(state=tk.NORMAL, image=self.view.play_image_normal)
             self.view.step_button.config(state=tk.NORMAL, image=self.view.step_image_normal)
             self.view.next_button.config(state=tk.DISABLED, image=self.view.next_image_disabled)
+
 
     #
     #
@@ -279,12 +282,22 @@ class PlayerController:
     def next_pressed(self, event=None, step=1):
         if event is not None and event.state & 12 > 0:
             step = 10
+        #
+        # if there are no segments then jump forward step seconds
+        #
         cs = self.model.current_segment.get()
-        if cs is not None:
-            ts = min(cs + step, len(self.model.segments.get()))
-            self.model.set_current_segment(ts)
+        if cs is None:
+            tt = min(self.model.current_position.get() + step, self.model.track_length.get())
+            self.player.seek(tt)
+        else:
+            #
+            # step forward to the next segment
+            #
+            ts = cs + step
+            ts = min(ts, len(self.model.segments.get()) - 1 )
             tt = self.model.segments.get()[ts]
             self.player.seek(tt)
+
 
     #
     # The user has moved the slider, so send the seek command to the player to seek to that time.  The player will
