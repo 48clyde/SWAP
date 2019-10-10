@@ -19,8 +19,9 @@ class Observable:
             func(self.data)
 
     def set(self, data):
-        self.data = data
-        self._docallbacks()
+        if (self.data != data):
+            self.data = data
+            self._docallbacks()
 
     def get(self):
         return self.data

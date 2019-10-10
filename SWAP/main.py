@@ -109,11 +109,12 @@ class PlayerController:
                 self.model.player_state.set(ev)
 
             elif ev in [PlayerState.READY]:
-                self.model.player_state.set(ev)
                 self.model.set_current_position(param)
+                self.model.player_state.set(ev)
 
             elif ev in [PlayerState.PLAYING, PlayerState.PAUSED]:
                 self.model.set_current_position(param)
+                self.model.player_state.set(ev)
 
         self.root.after(200, self.process_player_events)
 
@@ -150,7 +151,7 @@ class PlayerController:
         self.player_state_button(None)
 
     def player_state_button(self, _x):
-        print("Player State {}".format(self.model.player_state.get()))
+        #print("Player State {}".format(self.model.player_state.get()))
 
         if self.model.player_state.get() in [PlayerState.UNINITALISED, PlayerState.INITALISED]:
             self.view.prev_interval_button.config(state=tk.DISABLED, image=self.view.prev_image_disabled)

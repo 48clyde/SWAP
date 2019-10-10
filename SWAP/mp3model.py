@@ -49,6 +49,7 @@ class MediaModel:
         #
         self.file_name.add_callback(self._open_file)
         self.file_name.add_callback(self._update_recent_files)
+        self.player_state.add_callback(self._state_changed)
 
     #
     # Callback handler on file_name for updating recents
@@ -96,6 +97,10 @@ class MediaModel:
         #
         self.segment_analyzer.process(filename)
 
+
+    def _state_changed(self, state):
+        print("Player State    {}".format(state))
+        return
 
     def set_current_position(self, cp):
         self.current_position.set(cp)
