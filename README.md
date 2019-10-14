@@ -91,4 +91,15 @@ A simple example outline of a Python project on GitHub.
 
 
 
+
+### Building Executable
+
+
+source ~/venv/SWAP/bin/activate
+cd ~/PycharmProjects/SWAP
+rm -r dist
+pyinstaller --clean  --name SWAP --add-data SWAP/images:images --windowed SWAP/main.py
+./dist/SWAP.app/Contents/MacOS/SWAP
+
+
 ## TODO

@@ -1,12 +1,28 @@
 import tkinter as tk
 from tkinter.ttk import Progressbar
+import os.path
+import sys
 
+
+
+def resource_path(resource):
+    frozen = 'not'
+    if getattr(sys, 'frozen', False):
+        # we are running in a bundle
+        frozen = 'ever so'
+        bundle_dir = sys._MEIPASS
+    else:
+        # we are running in a normal Python environment
+        bundle_dir = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(bundle_dir, resource)
 
 #
 # Create the player window - do all the stuff to create the required widgets
 # for the application
 #
 class PlayerView(tk.Frame):
+
+
 
     #
     #
@@ -136,8 +152,8 @@ class PlayerView(tk.Frame):
         #
         volume_frame = tk.Frame(left_frame)
         volume_frame.pack(side=tk.BOTTOM, anchor=tk.W)
-        self.volume_image = tk.PhotoImage(file='images/volume_NORMAL.png')
-        self.muted_image = tk.PhotoImage(file='images/mute_NORMAL.png')
+        self.volume_image = tk.PhotoImage(file=resource_path('images/volume_NORMAL.png'))
+        self.muted_image = tk.PhotoImage(file=resource_path('images/mute_NORMAL.png'))
 
         self.mute_button = tk.Button(volume_frame, image=self.volume_image, bd=10)
         self.mute_button.pack(side=tk.LEFT, anchor=tk.W)
@@ -157,30 +173,30 @@ class PlayerView(tk.Frame):
         control_group_frame = tk.Frame(left_frame)
         control_group_frame.pack(side=tk.BOTTOM, anchor=tk.CENTER)
 
-        self.prev_image_normal = tk.PhotoImage(file='images/prev_NORMAL.png')
-        self.prev_image_disabled = tk.PhotoImage(file='images/prev_DISABLED.png')
+        self.prev_image_normal = tk.PhotoImage(file=resource_path('images/prev_NORMAL.png'))
+        self.prev_image_disabled = tk.PhotoImage(file=resource_path('images/prev_DISABLED.png'))
         self.prev_interval_button = tk.Button(control_group_frame, image=self.prev_image_disabled)
         self.prev_interval_button.pack(side=tk.LEFT)
 
-        self.repeat_image_normal = tk.PhotoImage(file='images/repeat_NORMAL.png')
-        self.repeat_image_disabled = tk.PhotoImage(file='images/repeat_DISABLED.png')
+        self.repeat_image_normal = tk.PhotoImage(file=resource_path('images/repeat_NORMAL.png'))
+        self.repeat_image_disabled = tk.PhotoImage(file=resource_path('images/repeat_DISABLED.png'))
         self.repeat_button = tk.Button(control_group_frame, image=self.repeat_image_normal)
         self.repeat_button.pack(side=tk.LEFT)
 
-        self.play_image_normal = tk.PhotoImage(file='images/play_NORMAL.png')
-        self.play_image_disabled = tk.PhotoImage(file='images/play_DISABLED.png')
-        self.pause_image_normal = tk.PhotoImage(file='images/pause_NORMAL.png')
-        self.pause_image_disabled = tk.PhotoImage(file='images/pause_DISABLED.png')
+        self.play_image_normal = tk.PhotoImage(file=resource_path('images/play_NORMAL.png'))
+        self.play_image_disabled = tk.PhotoImage(file=resource_path('images/play_DISABLED.png'))
+        self.pause_image_normal = tk.PhotoImage(file=resource_path('images/pause_NORMAL.png'))
+        self.pause_image_disabled = tk.PhotoImage(file=resource_path('images/pause_DISABLED.png'))
         self.play_pause_button = tk.Button(control_group_frame, image=self.play_image_normal)
         self.play_pause_button.pack(side=tk.LEFT)
 
-        self.step_image_normal = tk.PhotoImage(file='images/step_NORMAL.png')
-        self.step_image_disabled = tk.PhotoImage(file='images/step_DISABLED.png')
+        self.step_image_normal = tk.PhotoImage(file=resource_path('images/step_NORMAL.png'))
+        self.step_image_disabled = tk.PhotoImage(file=resource_path('images/step_DISABLED.png'))
         self.step_button = tk.Button(control_group_frame, image=self.step_image_normal)
         self.step_button.pack(side=tk.LEFT)
 
-        self.next_image_normal = tk.PhotoImage(file='images/next_NORMAL.png')
-        self.next_image_disabled = tk.PhotoImage(file='images/next_DISABLED.png')
+        self.next_image_normal = tk.PhotoImage(file=resource_path('images/next_NORMAL.png'))
+        self.next_image_disabled = tk.PhotoImage(file=resource_path('images/next_DISABLED.png'))
         self.next_button = tk.Button(control_group_frame, image=self.next_image_normal)
         self.next_button.pack(side=tk.LEFT)
 
