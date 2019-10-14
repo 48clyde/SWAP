@@ -99,8 +99,9 @@ class MediaModel:
 
 
     def _state_changed(self, state):
-        print("Player State    {}".format(state))
+        # print("Player State    {}".format(state))
         return
+
 
     def set_current_position(self, cp):
         self.current_position.set(cp)
@@ -117,22 +118,46 @@ class MediaModel:
             # must be the first segment
             ix = 0
         else:
-            for ix in range(len(self.segments.get()) - 1, 0, -1):
+            for ix in range(len(self.segments.get()) - 1, -1, -1):
                 s = self.segments.get()[ix]
                 if s <= cp:
                     break
+
         self.current_segment.set(ix)
 
 
-    def set_current_position_by_segment(self, seg):
-        if seg is None:
-            self.set_current_position(0.0)
-        elif 0 <= seg < len(self.segments.get()):
-            self.set_current_position(self.segments.get()[seg])
-        else:
-            self.segments.get()[-1]
+    # def set_current_position_by_segment(self, seg):
+    #     if seg is None:
+    #         self.set_current_position(0.0)
+    #     elif 0 <= seg < len(self.segments.get()):
+    #         self.set_current_position(self.segments.get()[seg])
+    #     else:
+    #         self.segments.get()[-1]
 
 
     def _set_segments(self, segments):
         self.segments.set(segments)
         self.set_current_position(self.current_position.get())
+
+
+if __name__ ==  "__main__":
+
+    def mon_current_segment(cs):
+        print ("Current Segment {}".format(cs))
+
+    def mon_current_position(cp):
+        print ("Current Position {}".format(cp))
+
+    m = MediaModel()
+    m.current_segment.add_callback(mon_current_segment)
+    m.current_position.add_callback(mon_current_position)
+
+    m.segments.set([0.0, 3.4, 8.2, 11.4, 15.4])
+    m.set_current_position(0.0)
+    m.set_current_position(1.0)
+    m.set_current_position(3.4)
+    m.set_current_position(3.4000001)
+    m.set_current_position(4.0)
+    m.set_current_position(15.4)
+    m.set_current_position(30.0)
+

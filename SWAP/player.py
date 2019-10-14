@@ -242,6 +242,7 @@ class Player:
                 tf = self.mp3.frame_length()
                 self.track_length = self.mp3.frame_seconds(tf)
                 self.frames_per_second = tf // self.track_length
+                self.update_per_frame_count = round(self.frames_per_second / 5)    # about 5 times a second
                 self.to_time = self.track_length
                 self._set_state(PlayerState.LOADED, self.track_length)
                 self._set_state(PlayerState.READY, 0)
@@ -292,7 +293,11 @@ class Player:
         current_time = self.mp3.frame_seconds(fc)
         self._set_state(PlayerState.PLAYING, current_time)
 
-        to_frame = self.mp3.timeframe(self.to_time)
+        #
+        # work out the end frame.  The to time will be in the returned frame so
+        # want to stop at before the next one.
+        to_frame = self.mp3.timeframe(self.to_time) + 1
+
 
         for frame in self.mp3.iter_frames(self.out.start):
             #
@@ -305,13 +310,13 @@ class Player:
             # update the current track time about four times per second
             #
             fc += 1
-            if fc >= to_frame:
+            if fc > to_frame:
+                current_time = self.mp3.frame_seconds(self.mp3.tellframe())
                 self._set_state(PlayerState.PAUSED, current_time)
                 return
 
-            if fc % (self.frames_per_second / 4) == 0:
-                current_frame = self.mp3.tellframe()
-                current_time = self.mp3.frame_seconds(current_frame)
+            if fc % self.update_per_frame_count == 0:
+                current_time = self.mp3.frame_seconds(self.mp3.tellframe())
                 self.event_queue.put((PlayerState.PLAYING, current_time))
 
             if not self.command_queue.empty():

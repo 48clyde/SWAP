@@ -116,11 +116,11 @@ class PlayerController:
                 self.model.set_current_position(param)
                 self.model.player_state.set(ev)
 
-        self.root.after(200, self.process_player_events)
+        self.root.after(100, self.process_player_events)
 
     ####################################################################################################################
     #
-    # Callbacks re: the player state that impact on the buttons
+    # Callbacks re: the player states that impact on the buttons
     #
     def vu_album(self, album):
         self.view.set_album(album)
@@ -240,20 +240,20 @@ class PlayerController:
             self.player.seek(tt)
 
     #
-    #
+    # Replay the previous segment if currently paused otherwise re-start the current segment
     #
     def repeat_pressed(self, _event=None):
-        cs = self.model.current_segment.get()
-        tt = self.model.segments.get()[cs]
-        #
-        # If the current time is really close to the target time tt, then the user probably perhaps
-        # wanted the previous segment
-        #
-        proximity = self.model.current_position.get() - tt
-        if 0.0 < proximity and proximity < 1.0:
-            tt = self.model.segments.get()[max(cs - 1, 0)]
+        current_segment = self.model.current_segment.get()
+        if self.model.player_state.get() == PlayerState.PLAYING:
+            target_segment_start_time = self.model.segments.get()[current_segment]
+            self.player.seek(target_segment_start_time)
+        else:
+            target_segment = max(0, current_segment - 1)
+            target_segment_start_time = self.model.segments.get()[target_segment]
+            target_segment_end_time = self.model.segments.get()[target_segment + 1] + 0.00000000001
+            self.player.play(target_segment_start_time, target_segment_end_time)
 
-        self.player.seek(tt)
+
 
     #
     #
@@ -267,13 +267,14 @@ class PlayerController:
             self.player.play()
 
     #
-    #
+    # Play this segment and stop at the end of it
     #
     def step_pressed(self, _event=None):
         cs = self.model.current_segment.get()
         fs = self.model.segments.get()[cs]
         if cs < len(self.model.segments.get()):
-            ts = self.model.segments.get()[cs + 1]
+            ts = self.model.segments.get()[cs + 1] + 0.00000000001
+        #print ("Stepping {} to {}".format(fs, ts))
         self.player.play(fs, ts)
 
 
@@ -315,6 +316,7 @@ class PlayerController:
     def interval_selected_event(self, event):
         index = event.widget.curselection()[0]
         tt = self.model.segments.get()[index]
+        #self.model.set_current_position(tt)
         self.player.seek(tt)
 
 

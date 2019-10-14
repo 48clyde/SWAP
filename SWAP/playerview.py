@@ -270,6 +270,8 @@ class PlayerView(tk.Frame):
         for i in s:
             segments.append(PlayerView._display_time(i))
         self._segments.set(segments)
+        self.segment_list.selection_clear(0, tk.END)
+        self.segment_list.selection_set(0)
 
     ################################################################################################################
     #
