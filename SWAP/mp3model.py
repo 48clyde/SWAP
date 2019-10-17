@@ -90,7 +90,11 @@ class MediaModel:
             self.title.set("Unknown")
         else:
             self.album.set(audiofile.tag.album or "Unknown")
-            self.title.set(audiofile.tag.title or "Unknown")
+            if audiofile.tag.track_num[0]:
+                self.title.set("{} : {}".format(audiofile.tag.track_num[0], audiofile.tag.title or "Unknown"))
+            else:
+                self.title.set(audiofile.tag.title or "Unknown")
+
 
         #
         # Get the segments
