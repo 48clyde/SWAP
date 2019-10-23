@@ -4,8 +4,8 @@ Spoken Word Audio Player
 ![Screenshot of SWAP](screenshot.png)
 
 Why another MP3 player?  There were two motivations, both involving learning.  The
-first is learning french which involves listening to lots of audio files 
-and the second was wanting to do a simple Python GUI project.
+first is learning a language such as french which involves listening to lots of audio files 
+and the second was wanting to a simple Python GUI project.
 
 
 The idea for SWAP was born from the frustration when listening to foreign 
@@ -31,11 +31,11 @@ with any Python3 environment.
 
 The required python dependencies for SWAP are the following: 
 
-- *eyed3* for reading the MP3 metadata such as the title
-- *mpg123* for playing an MP3 file
-- *pydub* used to convert a MP3 into WAV format for analysis
-- *scipy.io* for reading the WAV file
-- *numpy* for analyzing the WAV file looking for the quiet periods between sentences
+- **eyed3** for reading the MP3 metadata such as the title
+- **mpg123** for playing an MP3 file
+- **pydub** used to convert a MP3 into WAV format for analysis
+- **scipy.io** for reading the WAV file
+- **numpy** for analyzing the WAV file looking for the quiet periods between sentences
  
 Also required are the [mpg123](https://www.mpg123.de/) libraries for your OS. 
 
@@ -89,17 +89,3 @@ A simple example outline of a Python project on GitHub.
 
 [somepackage by bast](https://github.com/bast/somepackage)
 
-
-
-
-### Building Executable
-
-
-source ~/venv/SWAP/bin/activate
-cd ~/PycharmProjects/SWAP
-rm -r dist
-pyinstaller --clean  --name SWAP --add-data SWAP/images:images --windowed SWAP/main.py
-./dist/SWAP.app/Contents/MacOS/SWAP
-
-
-## TODO
