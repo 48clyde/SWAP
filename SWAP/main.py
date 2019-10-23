@@ -272,9 +272,18 @@ class PlayerController:
     def step_pressed(self, _event=None):
         cs = self.model.current_segment.get()
         fs = self.model.segments.get()[cs]
-        if cs < len(self.model.segments.get()):
-            ts = self.model.segments.get()[cs + 1] + 0.00000000001
-        #print ("Stepping {} to {}".format(fs, ts))
+        if self.model.player_state.get() == PlayerState.PLAYING:
+            # currently playing, so skip forward to next segment
+            if cs < len(self.model.segments.get()) - 1:
+                fs = self.model.segments.get()[cs + 1]
+            if cs < len(self.model.segments.get()) - 2:
+                ts = self.model.segments.get()[cs + 2]
+            else:
+                ts = fs
+        else:
+            # paused so play this segment
+            if cs < len(self.model.segments.get()) - 1:
+                ts = self.model.segments.get()[cs + 1]
         self.player.play(fs, ts)
 
 
