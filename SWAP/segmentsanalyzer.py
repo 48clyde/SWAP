@@ -109,7 +109,7 @@ class SegmentsAnalyzer:
             step_size=step_size
         )
 
-        work_progress_units = int(int(len(samples) / float(step_size)) / (100.0 - _work_wave_convert_time))
+        work_progress_units = 1 + (int(int(len(samples) / float(step_size)) / (100.0 - _work_wave_convert_time)))
         pct_complete = _work_wave_convert_time
         window_energy = []
         for i, w in enumerate(signal_windows):
