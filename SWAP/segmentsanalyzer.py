@@ -1,29 +1,56 @@
 #!/usr/bin/env python
 """
-Analysise the audio file and assuming that it is speech, look for the pauses between
+Analyze the audio file and assuming that it is speech, look for the pauses between
 sentences and and identify the segments.
 
 Based on https://gist.github.com/rudolfbyker/8fc0d99ecadad0204813d97fee2c6c06
 """
 
 import os
-import tempfile
 import threading
 import queue
 
 from scipy.io import wavfile
 import numpy as np
 from pydub import AudioSegment
+from SWAP.mediacache import MediaCache
+import pickle
+
+# AnalyzerSettings = namedtuple('AnalyzerSettings','window_duration silence_threshold step_duration')
+# short = AnalyzerSettings(0.2, 1e-5,  0.2)
+# medium = AnalyzerSettings(0.4, 1e-6,  0.2)
+# long = AnalyzerSettings(0.5, 1e-6,  0.2)
+
+class AnalyzerProfile:
+    def __init__(self, name, window_duration, silence_threshold, step_duration):
+        self.name = name
+        self.window_duration = window_duration
+        self.silence_threshold = silence_threshold
+        self.step_duration = step_duration
+
+    def __str__(self):
+        return self.name
 
 
 class SegmentsAnalyzer:
+    SHORT = 'short'
+    STANDARD = 'standard'
+    LONG = 'long'
+
     def __init__(self):
-        self.window_duration = 0.6
-        self.silence_threshold = 1e-6
-        self.step_duration = 0.2
+
+        self.analyzer_profiles = {
+            SegmentsAnalyzer.SHORT :  AnalyzerProfile(SegmentsAnalyzer.SHORT, 0.2, 1e-5,  0.2),
+            SegmentsAnalyzer.STANDARD: AnalyzerProfile(SegmentsAnalyzer.STANDARD, 0.4, 1e-6,  0.2),
+            SegmentsAnalyzer.LONG: AnalyzerProfile(SegmentsAnalyzer.LONG, 0.5, 1e-6,  0.2)
+        }
+        self.analyzer_profile = self.analyzer_profiles[SegmentsAnalyzer.STANDARD]
+
 
         self.progress_callback = None
         self.completed_callback = None
+        self.wave_cache = MediaCache("wav")
+        self.segments_cache = MediaCache("seg")
 
         self._abandon_processing = threading.Event()
         self._queue = queue.Queue()
@@ -34,12 +61,34 @@ class SegmentsAnalyzer:
                 name="SegmentsAnalyzer")
         self._thread.start()
 
+    def set_analyzer_profile(self, analyzer_profile):
+        if analyzer_profile in self.analyzer_profiles:
+            self.analyzer_profile = self.analyzer_profiles[analyzer_profile]
+
+
     def process(self, media_file):
         #
         # Tell the SegmentsAnalyzer daemon to stop what ever it may currently be processing,
         # then queue the this item
         #
         self._abandon_processing.set()
+
+        #
+        # if the segments exist in the cache, then use them
+        #
+        seg_file = os.path.join(media_file, self.analyzer_profile.name)
+        if self.segments_cache.is_file_in_cache(seg_file):
+            cfn = self.segments_cache.get_file_cache_name(seg_file)
+            segments = pickle.load( open( cfn, "rb" ) )
+            if self.progress_callback is not None:
+                self.progress_callback(0.0)
+            if self.completed_callback is not None:
+                self.completed_callback(segments)
+            return
+
+        #
+        # The file isn't in the cache, so will need to process the mp3 to create it
+        #
         self._queue.put(media_file)
 
     @staticmethod
@@ -80,28 +129,27 @@ class SegmentsAnalyzer:
     #
     def _compute_segments(self, file_name, _abandon_processing):
         #
-        # Convert the file to WAV format
+        # Convert the file to WAV format if there isn't already a copy in the cache
         #
-        _work_wave_convert_time = 20.0
-        if self.progress_callback is not None:
-            self.progress_callback(_work_wave_convert_time)
+        cfn = self.wave_cache.get_file_cache_name(file_name)
+        _work_wave_convert_time = 0
+        if not self.wave_cache.is_file_in_cache(file_name):
+            _work_wave_convert_time = 20.0
+            if self.progress_callback is not None:
+                self.progress_callback(_work_wave_convert_time)
+            AudioSegment.from_file(file_name).export(cfn, format="wav")
+            if _abandon_processing.is_set():
+                return
 
-        temp_file_name = next(tempfile._get_candidate_names())  # noqa
-        tmp_wave_file = os.path.join(tempfile.mkdtemp(), temp_file_name)
-        AudioSegment.from_file(file_name).export(tmp_wave_file, format="wav")
-        if _abandon_processing.is_set():
-            os.remove(tmp_wave_file)
-            return
-
         #
-        # Load the wav file
+        # Analyse the wave file
         #
-        sample_rate, samples = wavfile.read(filename=tmp_wave_file, mmap=True)
+        sample_rate, samples = wavfile.read(filename=cfn, mmap=True)
         max_amplitude = np.iinfo(samples.dtype).max
         max_energy = SegmentsAnalyzer._energy([max_amplitude])
 
-        window_size = int(self.window_duration * sample_rate)
-        step_size = int(self.step_duration * sample_rate)
+        window_size = int(self.analyzer_profile.window_duration * sample_rate)
+        step_size = int(self.analyzer_profile.step_duration * sample_rate)
 
         signal_windows = SegmentsAnalyzer._windows(
             signal=samples,
@@ -118,7 +166,6 @@ class SegmentsAnalyzer:
             # Check if we should stop
             #
             if _abandon_processing.is_set():
-                os.remove(tmp_wave_file)
                 return
             #
             # Report progress
@@ -128,20 +175,24 @@ class SegmentsAnalyzer:
                 if self.progress_callback is not None:
                     self.progress_callback(pct_complete)
 
-        window_silence = (e > self.silence_threshold for e in window_energy)
+        window_silence = (e > self.analyzer_profile.silence_threshold for e in window_energy)
         frames = []
         for r in SegmentsAnalyzer._rising_edges(window_silence):
-            frames.append(r * self.step_duration)
+            frames.append(r * self.analyzer_profile.step_duration)
 
         # Add frame for the end of the file
-        frames.append(len(window_energy) * self.step_duration)
+        frames.append(len(window_energy) * self.analyzer_profile.step_duration)
 
         if self.progress_callback is not None:
             self.progress_callback(0.0)
-        os.remove(tmp_wave_file)
 
         if self.completed_callback is not None:
             self.completed_callback(frames)
+
+        # store the frames in the cache
+        seg_file = os.path.join(file_name, self.analyzer_profile.name)
+        cache_seg_file = self.segments_cache.get_file_cache_name(seg_file)
+        pickle.dump(frames, open(cache_seg_file, "wb"))
 
 
 if __name__ ==  "__main__":

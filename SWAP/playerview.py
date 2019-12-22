@@ -4,7 +4,6 @@ import os.path
 import sys
 
 
-
 def resource_path(resource):
     frozen = 'not'
     if getattr(sys, 'frozen', False):
@@ -16,13 +15,12 @@ def resource_path(resource):
         bundle_dir = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(bundle_dir, resource)
 
+
 #
 # Create the player window - do all the stuff to create the required widgets
 # for the application
 #
 class PlayerView(tk.Frame):
-
-
 
     #
     #
@@ -84,6 +82,15 @@ class PlayerView(tk.Frame):
         edit_menu.add_command(
             label="Paste", accelerator="Command+V",
             command=lambda i="menuEditPaste": self._menu_callback(i))
+
+        analysis_menu = tk.Menu(self.main_menu)
+        self.main_menu.add_cascade(label="Speech Gap Analysis", menu=analysis_menu)
+
+        self.radvar = tk.StringVar()
+        self.radvar.set('standard')
+        analysis_menu.add_radiobutton(label="Short", command=lambda i="menuAnalysisShort": self._menu_callback(i), variable=self.radvar, value='short')
+        analysis_menu.add_radiobutton(label="Standard", command=lambda i="menuAnalysisStandard": self._menu_callback(i), variable=self.radvar, value='standard')
+        analysis_menu.add_radiobutton(label="Long", command=lambda i="menuAnalysisLong": self._menu_callback(i), variable=self.radvar, value='long')
 
         # The menu callback methods for the controller
         #
@@ -200,6 +207,7 @@ class PlayerView(tk.Frame):
         self.next_button = tk.Button(control_group_frame, image=self.next_image_normal)
         self.next_button.pack(side=tk.LEFT)
 
+
     ################################################################################################################
     #
     # callback menu handlers
@@ -293,8 +301,6 @@ class PlayerView(tk.Frame):
     #
     # update the recents menu with the first X most recent files if there are any available.
     #
-    MAX_DISPLAY_RECENTS = 9
-
     def set_menu_recents(self, recents):
         #
         # Remove old recents, i.e. those items from 0 until 1 before the separator

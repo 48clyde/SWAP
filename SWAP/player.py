@@ -9,7 +9,6 @@ import ctypes
 from enum import Enum
 import threading
 import queue
-
 import mpg123
 
 
@@ -298,7 +297,6 @@ class Player:
         # want to stop at before the next one.
         to_frame = self.mp3.timeframe(self.to_time) + 1
 
-
         for frame in self.mp3.iter_frames(self.out.start):
             #
             # output the frame
@@ -330,7 +328,7 @@ class Player:
     # update the player state and put the event in the queue
     #
     def _set_state(self, state, param=None):
-        #print ("Setting state {}".format(state))
+        # print ("Setting state {}".format(state))
         self._current_state = state
         self.event_queue.put((state, param))
 
@@ -359,10 +357,12 @@ class Player:
     def set_volume(self, volume):
         self.mp3.set_volume(volume)
 
+#
+#
+#
 
 
-
-if __name__ ==  "__main__":
+if __name__ == "__main__":
     import time
 
     p = Player()
