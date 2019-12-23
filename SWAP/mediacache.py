@@ -39,19 +39,25 @@ class MediaCache:
     #
     # Store a file in the cache
     #
-
     def store_file(self, file_name):
         fcn = self.get_file_cache_name(file_name)
         shutil.copy(file_name, fcn)
-        stat = os.stat(fcn)
-        self.cached[fcn] = (stat.st_ctime, stat.st_size)
-        self.cached_size += stat.st_size
-        self.__check_limits(fcn)
+        self.add_file(file_name)
+
+    #
+    #
+    #
+    def add_file(self, file_name):
+        fcn = self.get_file_cache_name(file_name)
+        if os.path.exists(fcn):
+            stat = os.stat(fcn)
+            self.cached[fcn] = (stat.st_ctime, stat.st_size)
+            self.cached_size += stat.st_size
+            self.__check_limits(fcn)
 
     #
     # Check the cache limits.
     #
-
     def __check_limits(self, exclude=None):
         #
         # File count limit reached?
@@ -81,7 +87,6 @@ class MediaCache:
     #
     # See if the file is cached
     #
-
     def is_file_in_cache(self, file_name):
         fcn = self.get_file_cache_name(file_name)
         return fcn in self.cached
@@ -89,10 +94,10 @@ class MediaCache:
     #
     # Get the name of file in the cache, doesn't mean that the file is actually there
     #
-
     def get_file_cache_name(self, file_name):
         cfn = hashlib.md5(file_name.encode('utf-8')).hexdigest()
         return os.path.join(self.group_dir, cfn)
+
 
 
 if __name__ == "__main__":

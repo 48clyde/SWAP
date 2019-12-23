@@ -60,7 +60,8 @@ class SettingsManager:
                 fnk = 'file.{}.name'.format(i)
                 if fnk in SettingsManager._config[SettingsManager._RECENTS]:
                     fn = SettingsManager._config[SettingsManager._RECENTS][fnk]
-                    recents.append(fn)
+                    if fn not in recents:
+                        recents.append(fn)
             model.recent_files.set(recents)
 
         if SettingsManager._SETTINGS in SettingsManager._config:

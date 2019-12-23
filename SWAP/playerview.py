@@ -77,7 +77,7 @@ class PlayerView(tk.Frame):
         edit_menu.add_command(label="Cut", state=tk.DISABLED, accelerator="Command+X")
 
         edit_menu.add_command(
-            label="Copy", accelerator="Command+C", state=tk.DISABLED,
+            label="Copy", accelerator="Command+C", state=tk.NORMAL,
             command=lambda i="menuEditCopy": self._menu_callback(i))
         edit_menu.add_command(
             label="Paste", accelerator="Command+V",
@@ -86,11 +86,11 @@ class PlayerView(tk.Frame):
         analysis_menu = tk.Menu(self.main_menu)
         self.main_menu.add_cascade(label="Speech Gap Analysis", menu=analysis_menu)
 
-        self.radvar = tk.StringVar()
-        self.radvar.set('standard')
-        analysis_menu.add_radiobutton(label="Short", command=lambda i="menuAnalysisShort": self._menu_callback(i), variable=self.radvar, value='short')
-        analysis_menu.add_radiobutton(label="Standard", command=lambda i="menuAnalysisStandard": self._menu_callback(i), variable=self.radvar, value='standard')
-        analysis_menu.add_radiobutton(label="Long", command=lambda i="menuAnalysisLong": self._menu_callback(i), variable=self.radvar, value='long')
+        self.gap_analysis = tk.StringVar()
+        self.gap_analysis.set('standard')
+        analysis_menu.add_radiobutton(label="Short", command=lambda i="menuAnalysisShort": self._menu_callback(i), variable=self.gap_analysis, value='short')
+        analysis_menu.add_radiobutton(label="Standard", command=lambda i="menuAnalysisStandard": self._menu_callback(i), variable=self.gap_analysis, value='standard')
+        analysis_menu.add_radiobutton(label="Long", command=lambda i="menuAnalysisLong": self._menu_callback(i), variable=self.gap_analysis, value='long')
 
         # The menu callback methods for the controller
         #
@@ -227,6 +227,8 @@ class PlayerView(tk.Frame):
     #
     # setters
     #
+    def set_gap_analysis(self, analysis):
+        self.gap_analysis.set(analysis)
 
     #
     #

@@ -31,12 +31,12 @@ class PlayerController:
         self.model.current_position.add_callback(self.vu_current_positon)
 
         self.model.current_segment.add_callback(self.vu_current_segment)
+        self.model.recent_files.add_callback(self.view.set_menu_recents)
 
         self.model.segments.add_callback(self.vu_segments)
         self.model.load_progress.add_callback(self.vu_load_progress)
         self.model.volume.add_callback(self.vu_volume)
         self.model.muted.add_callback(self.vu_muted)
-
 
         #
         # Bind the controls to commands to process when users click on them
@@ -56,11 +56,6 @@ class PlayerController:
         #
         self.view.menu_callback = self.menu_callback
         self.view.menu_recents_callback = self.menu_recent_selected
-
-        #
-        # Load the settings, i.e. recents
-        #
-        SettingsManager.load(self.model)
 
         #
         # Create the media player and get the current volume level
@@ -92,9 +87,15 @@ class PlayerController:
         self.segment_analyzer.progress_callback = self.model.load_progress.set
         self.segment_analyzer.completed_callback = self.model.set_segments
         self.model.gap_analysis.add_callback(self.segment_analyzer.set_analyzer_profile)
+        self.model.gap_analysis.add_callback(self.view.set_gap_analysis)
+
+
+        #
+        # Load the settings, i.e. recents
+        #
+        SettingsManager.load(self.model)
 
         self.root.after(200, self.process_player_events)
-
 
     ####################################################################################################################
     #
@@ -225,7 +226,6 @@ class PlayerController:
             self.view.step_button.config(state=tk.NORMAL, image=self.view.step_image_normal)
             self.view.next_button.config(state=tk.DISABLED, image=self.view.next_image_disabled)
 
-
     #
     #
     #
@@ -264,8 +264,6 @@ class PlayerController:
             target_segment_end_time = self.model.segments.get()[target_segment + 1] + 0.00000000001
             self.player.play(target_segment_start_time, target_segment_end_time)
 
-
-
     #
     #
     #
@@ -281,6 +279,7 @@ class PlayerController:
     # Play this segment and stop at the end of it
     #
     def step_pressed(self, _event=None):
+        ts = 0
         cs = self.model.current_segment.get()
         fs = self.model.segments.get()[cs]
         if self.model.player_state.get() == PlayerState.PLAYING:
@@ -297,7 +296,6 @@ class PlayerController:
                 ts = self.model.segments.get()[cs + 1]
         if fs is not None and ts is not None:
             self.player.play(fs, ts)
-
 
     #
     #
@@ -317,10 +315,9 @@ class PlayerController:
             # step forward to the next segment
             #
             ts = cs + step
-            ts = min(ts, len(self.model.segments.get()) - 1 )
+            ts = min(ts, len(self.model.segments.get()) - 1)
             tt = self.model.segments.get()[ts]
             self.player.seek(tt)
-
 
     #
     # The user has moved the slider, so send the seek command to the player to seek to that time.  The player will
@@ -337,9 +334,8 @@ class PlayerController:
     def interval_selected_event(self, event):
         index = event.widget.curselection()[0]
         tt = self.model.segments.get()[index]
-        #self.model.set_current_position(tt)
+        # self.model.set_current_position(tt)
         self.player.seek(tt)
-
 
     #
     # Toggle muted on or off
@@ -352,8 +348,6 @@ class PlayerController:
     #
     def volume_changed(self, vol):
         self.player.set_volume(float(vol))
-
-
 
     ####################################################################################################################
     #
@@ -372,7 +366,7 @@ class PlayerController:
                 self.root.clipboard_append(self.model.file_name.get())
 
         elif menu_item == "menuEditPaste":
-            self.model.file_name.set(self.root.clipboard_get())
+            self.open_file(self.root.clipboard_get())
 
         elif menu_item == "menuRecentClear":
             self.model.recent_files.set([])
@@ -393,8 +387,12 @@ class PlayerController:
     #
     #
     def menu_open_file(self):
+        initaldir = os.path.join(os.path.expanduser("~"))
+        if len(self.model.recent_files.get()) > 0:
+            initaldir = os.path.dirname(os.path.realpath(self.model.recent_files.get()[0]))
+
         file_name = filedialog.askopenfilename(
-            initialdir=self.settings.get_last_media_directory(),
+            initialdir=initaldir,
             title="Select file",
             filetypes=(
                 ("MP3 files", "*.mp3"),
@@ -403,25 +401,36 @@ class PlayerController:
             return
         self.open_file(file_name)
 
+    #
+    #
+    #
     def open_file(self, file_name):
         if not os.path.exists(file_name) or not os.access(file_name, os.R_OK):
             return False
 
-        if file_name in self.model.recent_files.get():
-            self.model.recent_files.get().remove(file_name)
-        self.model.recent_files.get().insert(0, file_name)
+        recents = []
+        recents.extend(self.model.recent_files.get())
+        if file_name in recents:
+            recents.remove(file_name)
+        recents.insert(0, file_name)
+        self.model.recent_files.set(recents)
+
         self.model.file_name.set(file_name)
         return self.load_file(file_name)
 
     #
+    #
+    #
     def load_file(self, file_name):
+
         #
         # Get the mp3 tags
         #
+        self.model.segments.set([])
         audiofile = eyed3.load(file_name)
         if audiofile.tag is None:
-            self.album.set("Unknown")
-            self.title.set("Unknown")
+            self.model.album.set("Unknown")
+            self.model.title.set("Unknown")
         else:
             self.model.album.set(audiofile.tag.album or "Unknown")
             if audiofile.tag.track_num[0]:
@@ -435,16 +444,21 @@ class PlayerController:
         self.segment_analyzer.process(file_name)
         return True
 
-
+    #
+    #
+    #
     def quit(self):
         SettingsManager.save(self.model)
         self.player.pause()
         self.root.destroy()
 
+    #
+    #
+    #
     def menu_recent_selected(self, recent_ix):
         selected_recent = self.model.recent_files.get()[recent_ix]
         if selected_recent and selected_recent is not "" and os.path.exists(selected_recent) and os.access(selected_recent, os.R_OK):
-           self.model.file_name.set(selected_recent)
+            self.open_file(selected_recent)
 
 
 ####################################################################################################################

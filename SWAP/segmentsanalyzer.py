@@ -138,6 +138,7 @@ class SegmentsAnalyzer:
             if self.progress_callback is not None:
                 self.progress_callback(_work_wave_convert_time)
             AudioSegment.from_file(file_name).export(cfn, format="wav")
+            self.wave_cache.add_file(file_name)
             if _abandon_processing.is_set():
                 return
 
@@ -193,6 +194,7 @@ class SegmentsAnalyzer:
         seg_file = os.path.join(file_name, self.analyzer_profile.name)
         cache_seg_file = self.segments_cache.get_file_cache_name(seg_file)
         pickle.dump(frames, open(cache_seg_file, "wb"))
+        self.segments_cache.add_file(seg_file)
 
 
 if __name__ ==  "__main__":
