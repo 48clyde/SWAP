@@ -5,7 +5,7 @@ Manage the settings, such as the list of recently opened media files
 
 import os
 import configparser
-from SWAP.player import PlayerState
+
 
 class SettingsManager:
 
@@ -15,7 +15,6 @@ class SettingsManager:
 
     _config = configparser.ConfigParser()
     _config_file = os.path.join(os.path.expanduser("~"), '.swaplayer')
-
 
     @staticmethod
     def save(model):
@@ -43,11 +42,11 @@ class SettingsManager:
 
         SettingsManager._config[SettingsManager._SETTINGS]['player.volume'] = "{}".format(model.volume.get())
         SettingsManager._config[SettingsManager._SETTINGS]['player.gap_analysis'] = model.gap_analysis.get()
-        SettingsManager._config[SettingsManager._SETTINGS]['player.position'] = "{}".format(model.current_position.get())
+        SettingsManager._config[SettingsManager._SETTINGS]['player.position'] = "{}".format(
+            model.current_position.get())
 
         with open(SettingsManager._config_file, 'w') as cf:
             SettingsManager._config.write(cf)
-
 
     @staticmethod
     def load(model):

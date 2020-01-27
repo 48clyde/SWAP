@@ -16,10 +16,6 @@ from pydub import AudioSegment
 from SWAP.mediacache import MediaCache
 import pickle
 
-# AnalyzerSettings = namedtuple('AnalyzerSettings','window_duration silence_threshold step_duration')
-# short = AnalyzerSettings(0.2, 1e-5,  0.2)
-# medium = AnalyzerSettings(0.4, 1e-6,  0.2)
-# long = AnalyzerSettings(0.5, 1e-6,  0.2)
 
 class AnalyzerProfile:
     def __init__(self, name, window_duration, silence_threshold, step_duration):
@@ -40,12 +36,11 @@ class SegmentsAnalyzer:
     def __init__(self):
 
         self.analyzer_profiles = {
-            SegmentsAnalyzer.SHORT :  AnalyzerProfile(SegmentsAnalyzer.SHORT, 0.15, 1e-5,  0.15),
+            SegmentsAnalyzer.SHORT:  AnalyzerProfile(SegmentsAnalyzer.SHORT, 0.15, 1e-5,  0.15),
             SegmentsAnalyzer.STANDARD: AnalyzerProfile(SegmentsAnalyzer.STANDARD, 0.4, 1e-6,  0.3),
             SegmentsAnalyzer.LONG: AnalyzerProfile(SegmentsAnalyzer.LONG, 0.5, 1e-6,  0.2)
         }
         self.analyzer_profile = self.analyzer_profiles[SegmentsAnalyzer.STANDARD]
-
 
         self.progress_callback = None
         self.completed_callback = None
@@ -65,7 +60,6 @@ class SegmentsAnalyzer:
         if analyzer_profile in self.analyzer_profiles:
             self.analyzer_profile = self.analyzer_profiles[analyzer_profile]
 
-
     def process(self, media_file):
         #
         # Tell the SegmentsAnalyzer daemon to stop what ever it may currently be processing,
@@ -79,7 +73,7 @@ class SegmentsAnalyzer:
         seg_file = os.path.join(media_file, self.analyzer_profile.name)
         if self.segments_cache.is_file_in_cache(seg_file):
             cfn = self.segments_cache.get_file_cache_name(seg_file)
-            segments = pickle.load( open( cfn, "rb" ) )
+            segments = pickle.load(open(cfn, "rb"))
             if self.progress_callback is not None:
                 self.progress_callback(0.0)
             if self.completed_callback is not None:
@@ -197,7 +191,7 @@ class SegmentsAnalyzer:
         self.segments_cache.add_file(seg_file)
 
 
-if __name__ ==  "__main__":
+if __name__ == "__main__":
     import time
 
     def callback(f):
@@ -207,4 +201,3 @@ if __name__ ==  "__main__":
     sa.completed_callback = callback
     sa.process("sample.mp3")
     time.sleep(100)
-

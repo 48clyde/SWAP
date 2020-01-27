@@ -89,7 +89,6 @@ class PlayerController:
         self.model.gap_analysis.add_callback(self.segment_analyzer.set_analyzer_profile)
         self.model.gap_analysis.add_callback(self.view.set_gap_analysis)
 
-
         #
         # Load the settings, i.e. recents
         #

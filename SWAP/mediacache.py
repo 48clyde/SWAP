@@ -99,10 +99,8 @@ class MediaCache:
         return os.path.join(self.group_dir, cfn)
 
 
-
 if __name__ == "__main__":
     mc = MediaCache("test", 100000, 3)
     mc.store_file("../screenshot.png")
     mc.store_file("../notes.txt")
     mc.store_file("sample.mp3")
-

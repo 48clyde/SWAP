@@ -207,7 +207,6 @@ class PlayerView(tk.Frame):
         self.next_button = tk.Button(control_group_frame, image=self.next_image_normal)
         self.next_button.pack(side=tk.LEFT)
 
-
     ################################################################################################################
     #
     # callback menu handlers
@@ -288,12 +287,12 @@ class PlayerView(tk.Frame):
     #
     #
     #
-    def set_segments(self, s):
-        if s is None or len(s) == 0:
+    def set_segments(self, ss):
+        if ss is None or len(ss) == 0:
             self._segments.set([])
             return
         segments = []
-        for i in s:
+        for i in ss:
             segments.append(PlayerView._display_time(i))
         self._segments.set(segments)
         self.segment_list.selection_clear(0, tk.END)
@@ -357,7 +356,7 @@ class PlayerView(tk.Frame):
             return "{:02d}:{:02d}".format(m, seconds)
 
 
-if __name__ ==  "__main__":
+if __name__ == "__main__":
     root = tk.Tk()
     root.geometry("400x300")
     app = PlayerView(root)
