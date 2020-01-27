@@ -40,8 +40,8 @@ class SegmentsAnalyzer:
     def __init__(self):
 
         self.analyzer_profiles = {
-            SegmentsAnalyzer.SHORT :  AnalyzerProfile(SegmentsAnalyzer.SHORT, 0.2, 1e-5,  0.2),
-            SegmentsAnalyzer.STANDARD: AnalyzerProfile(SegmentsAnalyzer.STANDARD, 0.4, 1e-6,  0.2),
+            SegmentsAnalyzer.SHORT :  AnalyzerProfile(SegmentsAnalyzer.SHORT, 0.15, 1e-5,  0.15),
+            SegmentsAnalyzer.STANDARD: AnalyzerProfile(SegmentsAnalyzer.STANDARD, 0.4, 1e-6,  0.3),
             SegmentsAnalyzer.LONG: AnalyzerProfile(SegmentsAnalyzer.LONG, 0.5, 1e-6,  0.2)
         }
         self.analyzer_profile = self.analyzer_profiles[SegmentsAnalyzer.STANDARD]
